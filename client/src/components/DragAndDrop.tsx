@@ -4,6 +4,7 @@ const DragAndDrop = () => {
   const [jsonData, setJsonData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState<boolean>(false);
+  const [translatedJsonData, setTranslatedJsonData] = useState<any>(null);
 
   const styles = {
     rootContainer: { display: "flex", height: "500px", width: "100%" },
@@ -52,7 +53,7 @@ const DragAndDrop = () => {
     setDragging(false);
   };
 
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
     setDragging(false);
@@ -82,6 +83,38 @@ const DragAndDrop = () => {
       }
     }
   };
+
+  useEffect(() => {
+    if (jsonData) {
+      console.log("jsonData:", jsonData);
+      // Translate to German
+      try {
+        fetch("/translate/german", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(jsonData),
+        })
+          .then((response) => {
+            if (response.ok) {
+              return response.json();
+            } else {
+              throw new Error("Network response was not ok.");
+            }
+          })
+          .then((germanJson) => {
+            setTranslatedJsonData(germanJson);
+          })
+          .catch((error) => {
+            console.error("Error fetching translation:", error);
+          });
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
+  }, [jsonData]);
+
   return (
     <div style={styles.rootContainer}>
       {error && (
@@ -106,9 +139,17 @@ const DragAndDrop = () => {
               readOnly
               value={JSON.stringify(jsonData, null, 2)}
             />
-            <div style={{ ...styles.dragndrop, textAlign: "center" }}>
-              <h3 style={styles.dragTitle}>Translating to German...</h3>
-            </div>
+            {!translatedJsonData ? (
+              <div style={{ ...styles.dragndrop, textAlign: "center" }}>
+                <h3 style={styles.dragTitle}>Translating to German...</h3>
+              </div>
+            ) : (
+              <textarea
+                style={styles.result}
+                readOnly
+                value={JSON.stringify(translatedJsonData, null, 2)}
+              />
+            )}
           </>
         )}
       </div>
