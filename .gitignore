@@ -1,0 +1,14 @@
+# Node
+client/node_modules/
+client/build/
+client/.env
+
+# Python
+server/venv/
+server/__pycache__/
+server/*.py[cod]
+server/*.egg-info/
+server/.env
+
+# Logs
+*.log
