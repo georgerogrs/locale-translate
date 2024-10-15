@@ -1,44 +1,35 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import { accentColor } from "../colors/colors";
 
-const DragAndDrop = () => {
-  const [jsonData, setJsonData] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
+interface Props {
+  uploadJsonToBrowser: (files: any) => void;
+}
+
+const DragAndDrop = ({ uploadJsonToBrowser }: Props) => {
   const [dragging, setDragging] = useState<boolean>(false);
-  const [translatedJsonData, setTranslatedJsonData] = useState<any>(null);
 
   const styles = {
-    rootContainer: { display: "flex", height: "500px", width: "100%" },
-    container: {
-      width: "100%",
-      display: "flex",
-      alignItems: "flex-start",
-    },
-    errorContainer: {
-      width: "100%",
-      display: "flex",
-      justifyContent: "center",
-    },
-    errorStyle: {
-      width: "80%",
-      backgroundColor: "red",
-      color: "white",
-      padding: 10,
-      borderRadius: 5,
-    },
     dragndrop: {
-      border: "3px dashed black",
-      borderRadius: "5px",
+      border: `1px solid ${dragging ? accentColor : "darkgrey"}`,
       height: "100%",
       width: "50%",
-      backgroundColor: dragging ? "lightgrey" : "white",
+      backgroundColor: dragging
+        ? "rgba(173, 216, 230, 0.3)"
+        : "rgba(0, 0, 0, 0)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
     },
     dragTitle: {
-      paddingBottom: 20,
+      fontWeight: 500,
+      color: dragging ? accentColor : "lightgrey",
     },
-    result: { height: "100%", width: "50%" },
+    icon: {
+      fontSize: 50,
+      margin: -1,
+      color: dragging ? accentColor : "lightgrey",
+    },
   };
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
@@ -53,106 +44,29 @@ const DragAndDrop = () => {
     setDragging(false);
   };
 
-  const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
+  const handleOnDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
     setDragging(false);
-    const files = event.dataTransfer.files;
-
-    if (files.length > 0) {
-      const file = files[0];
-
-      // Check if the dropped file is a JSON file
-      if (file.type === "application.json" || file.name.endsWith(".json")) {
-        const reader = new FileReader(); // creates new instance of filereader which allows browser to read file on user computer
-        reader.onload = (event) => {
-          // Trying to successfully read file user uploaded
-          try {
-            const json = JSON.parse(event.target?.result as string);
-            setJsonData(json);
-            setError(null);
-          } catch (error) {
-            setError("Invalid JSON file");
-            setJsonData(null);
-          }
-        };
-        reader.readAsText(file); // Reads file as text and activates onload event
-      } else {
-        setError("Please drop a valid JSON file");
-        setJsonData(null);
-      }
-    }
+    uploadJsonToBrowser(event.dataTransfer.files);
   };
 
-  useEffect(() => {
-    if (jsonData) {
-      console.log("jsonData:", jsonData);
-      // Translate to German
-      try {
-        fetch("/translate/german", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(jsonData),
-        })
-          .then((response) => {
-            if (response.ok) {
-              return response.json();
-            } else {
-              throw new Error("Network response was not ok.");
-            }
-          })
-          .then((germanJson) => {
-            setTranslatedJsonData(germanJson);
-          })
-          .catch((error) => {
-            console.error("Error fetching translation:", error);
-          });
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    }
-  }, [jsonData]);
-
   return (
-    <div style={styles.rootContainer}>
-      {error && (
-        <div style={styles.errorContainer}>
-          <h4 style={{ ...styles.errorStyle, textAlign: "center" }}>{error}</h4>
-        </div>
-      )}
-      <div style={{ ...styles.container, flexDirection: "row" }}>
-        {!jsonData ? (
-          <div
-            onDragOver={handleDragOver}
-            onDragExit={handleDragExit}
-            onDrop={handleDrop}
-            style={{ ...styles.dragndrop, textAlign: "center" }}
-          >
-            <h3 style={styles.dragTitle}>Drag your JSON file here</h3>
-          </div>
-        ) : (
-          <>
-            <textarea
-              style={styles.result}
-              readOnly
-              value={JSON.stringify(jsonData, null, 2)}
-            />
-            {!translatedJsonData ? (
-              <div style={{ ...styles.dragndrop, textAlign: "center" }}>
-                <h3 style={styles.dragTitle}>Translating to German...</h3>
-              </div>
-            ) : (
-              <textarea
-                style={styles.result}
-                readOnly
-                value={JSON.stringify(translatedJsonData, null, 2)}
-              />
-            )}
-          </>
-        )}
-      </div>
+    <div
+      onDragOver={handleDragOver}
+      onDragExit={handleDragExit}
+      onDrop={handleOnDrop}
+      style={{
+        ...styles.dragndrop,
+        textAlign: "center",
+        flexDirection: "column",
+      }}
+    >
+      <UploadFileIcon sx={styles.icon} />
+      <h3 style={styles.dragTitle}>
+        Drag and drop <br />
+        your JSON file here
+      </h3>
     </div>
   );
 };

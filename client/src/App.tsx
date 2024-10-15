@@ -1,4 +1,5 @@
 import MainTranslate from "./pages/MainTranslate";
+import "./App.css";
 
 function App() {
   return (

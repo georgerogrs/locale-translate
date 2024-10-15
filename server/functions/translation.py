@@ -22,9 +22,9 @@ def validate_translated_text(text):
         validatedText = '.'.join(textArray)
     return validatedText
 
-def translate_to_german (jsonData):
+def translate (jsonData, langCode):
     translatedJson = {}
     for key in jsonData:
-        translatedLine = translator.translate(jsonData[key], 'de')
+        translatedLine = translator.translate(jsonData[key], langCode)
         translatedJson[key] = validate_translated_text(translatedLine.text)
     return translatedJson

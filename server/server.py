@@ -1,15 +1,16 @@
 from flask import Flask, request, jsonify
-from server.functions.translation import translate_to_german
+from functions.translation import translate
 
 app = Flask(__name__)
 
-@app.route('/translate/german', methods=['POST'])
-def translate_german():
+@app.route('/translate/<lang_code>', methods=['POST'])
+def translate_input(lang_code):
+    if not lang_code:
+        return jsonify({"error": "No language code provided"}), 404
     jsonData = request.json
-    print(jsonData)
     if not jsonData:
         return jsonify({"error": "No data provided"}), 400
-    translated = translate_to_german(jsonData)
+    translated = translate(jsonData, lang_code)
     return jsonify(translated)
 
 
