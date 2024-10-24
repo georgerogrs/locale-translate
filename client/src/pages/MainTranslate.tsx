@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import DragAndDrop from "../components/DragAndDrop";
 import TitleHeader from "../components/TitleHeader";
 
@@ -7,64 +7,6 @@ const MainTranslate = () => {
   const [error, setError] = useState<string | null>(null);
   const [translatedJsonData, setTranslatedJsonData] = useState<any>(null);
   const [selectedLanguage, setSelectedLanguage] = useState("german");
-
-  const styles = {
-    mainContainer: {
-      display: "flex",
-      alignItems: "center",
-    },
-    rootContainer: {
-      display: "flex",
-      height: "500px",
-      width: "100%",
-      justifyContent: "center",
-    },
-    container: {
-      width: "80%",
-      display: "flex",
-      alignItems: "flex-start",
-    },
-    errorContainer: {
-      width: "100%",
-      display: "flex",
-      justifyContent: "center",
-    },
-    errorStyle: {
-      width: "80%",
-      backgroundColor: "red",
-      color: "white",
-      padding: 10,
-      borderRadius: 5,
-    },
-    translatedBox: {
-      border: "3px dashed black",
-      borderRadius: "5px",
-      height: "100%",
-      width: "50%",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    translatedTitle: {
-      paddingBottom: 20,
-    },
-    result: {
-      height: "100%",
-      width: "50%",
-      border: "1px solid black",
-      fontSize: 13,
-    },
-    inputContainer: {
-      height: "100%",
-      width: "50%",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    resetButton: {
-      marginTop: 10,
-    },
-  };
 
   const handleLanguageChange = (event: any) => {
     setSelectedLanguage(event.target.value);
@@ -76,25 +18,25 @@ const MainTranslate = () => {
     setTranslatedJsonData(null);
   };
 
-  const uploadJsonToBrowser = async (files: any) => {
+  const uploadJsonToBrowser = async (files: FileList) => {
     if (files.length > 0) {
       const file = files[0];
 
       // Check if the dropped file is a JSON file
-      if (file.type === "application.json" || file.name.endsWith(".json")) {
-        const reader = new FileReader(); // creates new instance of filereader which allows browser to read file on user computer
+      if (file.type === "application/json" || file.name.endsWith(".json")) {
+        const reader = new FileReader();
         reader.onload = (event) => {
-          // Trying to successfully read file user uploaded
           try {
             const json = JSON.parse(event.target?.result as string);
             setJsonData(json);
             setError(null);
           } catch (error) {
             setError("Invalid JSON file");
+            console.error("Invalid JSON file:", error);
             setJsonData(null);
           }
         };
-        reader.readAsText(file); // Reads file as text and activates onload event
+        reader.readAsText(file);
       } else {
         setError("Please drop a valid JSON file");
         setJsonData(null);
@@ -103,77 +45,178 @@ const MainTranslate = () => {
   };
 
   useEffect(() => {
-    if (jsonData) {
-      console.log("jsonData:", jsonData);
-      // Translate
-      try {
-        fetch(`/translate/${selectedLanguage}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(jsonData),
-        })
-          .then((response) => {
-            if (response.ok) {
-              return response.json();
-            } else {
-              throw new Error("Network response was not ok.");
-            }
-          })
-          .then((germanJson) => {
-            setTranslatedJsonData(germanJson);
-          })
-          .catch((error) => {
-            console.error("Error fetching translation:", error);
+    const fetchTranslation = async () => {
+      if (jsonData) {
+        try {
+          // Translate
+          const response = await fetch(`/translate/${selectedLanguage}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(jsonData),
           });
-      } catch (error) {
-        console.error("Error:", error);
+
+          if (response.ok) {
+            const data = await response.json();
+            setTranslatedJsonData(data);
+          } else {
+            throw new Error("Network response was not ok.");
+          }
+        } catch (error) {
+          console.error("Error fetching translation:", error);
+        }
       }
-    }
-  }, [jsonData]);
+    };
+
+    fetchTranslation(); // Call the async function
+  }, [jsonData, selectedLanguage]);
 
   return (
-    <div style={{ ...styles.mainContainer, flexDirection: "column" }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        flexDirection: "column",
+      }}
+    >
       <TitleHeader />
-      <div style={styles.rootContainer}>
+      <div
+        style={{
+          height: "100%",
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          backgroundColor: "lightblue",
+        }}
+      >
+        <div style={{ padding: 10 }}>
+          {!jsonData && (
+            <>
+              <label
+                htmlFor="language-select"
+                style={{ color: "black", fontSize: 15, marginRight: 10 }}
+              >
+                Language:
+              </label>
+              <select
+                value={selectedLanguage}
+                onChange={handleLanguageChange}
+                style={{ fontSize: 12 }}
+              >
+                <option style={{ fontSize: 12 }} value="german">
+                  English
+                </option>
+                <option style={{ fontSize: 12 }} value="german">
+                  German
+                </option>
+                <option style={{ fontSize: 12 }} value="french">
+                  French
+                </option>
+                <option style={{ fontSize: 12 }} value="hungarian">
+                  Hungarian
+                </option>
+                <option style={{ fontSize: 12 }} value="spanish">
+                  Spanish
+                </option>
+                <option style={{ fontSize: 12 }} value="italian">
+                  Italian
+                </option>
+                <option style={{ fontSize: 12 }} value="portuguese">
+                  Portuguese
+                </option>
+                <option style={{ fontSize: 12 }} value="chinese">
+                  Chinese
+                </option>
+                <option style={{ fontSize: 12 }} value="japanese">
+                  Japanese
+                </option>
+                <option style={{ fontSize: 12 }} value="korean">
+                  Korean
+                </option>
+                <option style={{ fontSize: 12 }} value="russian">
+                  Russian
+                </option>
+                <option style={{ fontSize: 12 }} value="arabic">
+                  Arabic
+                </option>
+              </select>
+            </>
+          )}
+          {jsonData && (
+            <button onClick={reset} style={{ marginLeft: 10 }}>
+              Reset
+            </button>
+          )}
+        </div>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          minHeight: "500px",
+          width: "100%",
+          justifyContent: "center",
+        }}
+      >
         {error && (
-          <div style={styles.errorContainer}>
-            <h4 style={{ ...styles.errorStyle, textAlign: "center" }}>
+          <div
+            style={{ width: "100%", display: "flex", justifyContent: "center" }}
+          >
+            <h4
+              style={{
+                width: "80%",
+                backgroundColor: "red",
+                color: "white",
+                padding: 10,
+                borderRadius: 5,
+                textAlign: "center",
+              }}
+            >
               {error}
             </h4>
           </div>
         )}
-        <div style={{ ...styles.container, flexDirection: "row" }}>
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "flex-start",
+            flexDirection: "row",
+          }}
+        >
           {!jsonData ? (
-            <>
-              <DragAndDrop uploadJsonToBrowser={uploadJsonToBrowser} />
-              <div style={styles.inputContainer}>
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <label htmlFor="language-select" style={{ marginBottom: 10 }}>
-                    Select a language:
-                  </label>
-                  <select
-                    name="languages"
-                    id="language-select"
-                    value={selectedLanguage}
-                    onChange={handleLanguageChange}
-                  >
-                    <option value="german">German</option>
-                    <option value="french">French</option>
-                    <option value="hungarian">Hungarian</option>
-                  </select>
-                </div>
-              </div>
-            </>
+            <DragAndDrop uploadJsonToBrowser={uploadJsonToBrowser} />
           ) : (
             <>
-              <div style={styles.result} contentEditable={true}>
+              <div
+                contentEditable={true}
+                style={{
+                  height: "100%",
+                  width: "50%",
+                  color: "black",
+                  backgroundColor: "white",
+                  border: "1px solid black",
+                  fontSize: 13,
+                  marginRight: 1,
+                }}
+              >
                 {JSON.stringify(jsonData, null, 2)}
               </div>
               {!translatedJsonData ? (
-                <div style={{ ...styles.translatedBox, textAlign: "center" }}>
-                  <h3 style={styles.translatedTitle}>
+                <div
+                  style={{
+                    border: "1px solid black",
+                    borderRadius: 5,
+                    height: "100%",
+                    width: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textAlign: "center",
+                  }}
+                >
+                  <h3 style={{ paddingBottom: 20 }}>
                     Translating to{" "}
                     {selectedLanguage[0].toUpperCase() +
                       selectedLanguage.slice(1)}
@@ -181,7 +224,17 @@ const MainTranslate = () => {
                   </h3>
                 </div>
               ) : (
-                <div style={styles.result} contentEditable={true}>
+                <div
+                  contentEditable={true}
+                  style={{
+                    height: "100%",
+                    width: "50%",
+                    color: "black",
+                    backgroundColor: "white",
+                    border: "1px solid black",
+                    fontSize: 13,
+                  }}
+                >
                   {JSON.stringify(translatedJsonData, null, 2)}
                 </div>
               )}
@@ -189,11 +242,6 @@ const MainTranslate = () => {
           )}
         </div>
       </div>
-      {jsonData && (
-        <button onClick={reset} style={styles.resetButton}>
-          Reset
-        </button>
-      )}
     </div>
   );
 };

@@ -1,28 +1,35 @@
 import { accentColor } from "../colors/colors";
+import { Box, Typography } from "@mui/material";
 
 const TitleHeader = () => {
-  const styles = {
-    header: {
-      width: "100%",
-      display: "flex",
-      justifyContent: "center",
-      marginBottom: 10,
-    },
-    titleStyle: {
-      fontWeight: 500,
-      color: "lightgrey",
-    },
-    json: {
-      fontWeight: "bold",
-      color: accentColor,
-    },
-  };
   return (
-    <div style={styles.header}>
-      <h1 style={styles.titleStyle}>
-        Locale<text style={styles.json}> JSON </text>Translate
+    <Box
+      sx={{
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
+        backgroundColor: "rgba(1, 1, 1, 0.15)",
+      }}
+    >
+      <h1
+        style={{
+          fontWeight: 500,
+          color: "lightgrey",
+        }}
+      >
+        Locale
+        <span
+          style={{
+            fontWeight: "bold",
+            color: accentColor,
+          }}
+        >
+          {" "}
+          JSON{" "}
+        </span>
+        Translate
       </h1>
-    </div>
+    </Box>
   );
 };
 

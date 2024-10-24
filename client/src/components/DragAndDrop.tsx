@@ -11,7 +11,6 @@ const DragAndDrop = ({ uploadJsonToBrowser }: Props) => {
 
   const styles = {
     dragndrop: {
-      border: `1px solid ${dragging ? accentColor : "darkgrey"}`,
       height: "100%",
       width: "50%",
       backgroundColor: dragging
